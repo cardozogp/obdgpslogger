@@ -1,0 +1,70 @@
+.TH obdgpslogger 1
+.SH NAME
+obdgpslogger \- Log OBD and GPS data to sqlite
+
+.SH SYNOPSIS
+.B obdgpslogger [ options ]
+
+.SH DESCRIPTION
+.IX Header "DESCRIPTION"
+This is a tool to log OBDII and GPS data to an sqlite database
+
+.SH OPTIONS
+.IX Header "OPTIONS"
+.IP "-s|--serial <serialport>"
+Open this serial port device to connect to the elm327 device.
+.IP "-c|--count <count>"
+Take this many samples at most. Leaving this option out defaults
+to incessant sampling.
+.IP "-a|--samplerate <samples-per-second>"
+Sample at most this many times a second. The software will sleep
+temporarily at the end of each loop if appropriate. Keep in mind
+there is an upper limit to samplerate, typically capped by I/O on
+your serial port. Set this to zero to sample as fast as possible.
+BE WARNED. Values greater than ten here are forbidden for cars
+predating April 2002. If you think your car postdates early 2002,
+and you'd like to sample as fast as possible, the -o option may
+help
+.IP "-o|--enable-optimisations"
+Enable certain elm327 optimisations. This will [usually] make
+sampling faster [not a noticable amount if you're only sampling
+once a second], but makes it much easier to accidentally disobey
+the standard if you're sampling as fast as possible.
+.IP "-p|--capabilities"
+Dump the commands your OBD device claims to support to stdout, then exit.
+.IP "-d|--db <database>"
+Open this database to log data to. The software will create the
+database if it does not exist, and create the tables it needs.
+.IP "-v|--version"
+Print out version number and exit.
+.IP "-h|--help"
+Print out help and exit.
+ 
+.SH NOT OPTIONS
+.IX Header "NOT OPTIONS"
+These options are not intended to be used by end users using the command
+line, they are support options for the GUI component. Use or rely on
+them at your own peril.
+.IP "-n|--no-autotrip"
+Disable automatic trip starting and stopping. If you use this, you can
+send SIGUSR1 and SIGUSR2 to start and stop trips, respectively.
+.IP "-t|--spam-stdout"
+Write all readings to stdout. The format is unlikely to change in
+practice, but if you choose to try to parse this yourself, I don't want
+to hear about it when it does change.
+
+.SH BUGS
+.IX Header "BUGS"
+The software doesn't check the existing tables in the database. If
+they do exist when it tries to create them, you'll see a warning
+but execution will continue. If the tables lack columns the INSERT
+is expecting, then expect a frenzy of unexpected behaviour, mostly
+pointless warnings and a whole lot of nothing INSERTed.
+
+.SH SEE ALSO
+.IX Header "SEE ALSO"
+.BR "obd2kml(1), obd2csv(1), obdgui(1)"
+
+.SH AUTHORS
+Gary "Chunky Ks" Briggs <chunky@icculus.org>
+
