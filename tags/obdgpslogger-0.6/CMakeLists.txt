@@ -1,0 +1,146 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
+IF(COMMAND CMAKE_POLICY)
+# Use old policy on ADD_DEFINITIONS and escaping
+	CMAKE_POLICY(SET CMP0005 OLD)
+# Use old policy to make mixing libraries with and without full paths ok
+	CMAKE_POLICY(SET CMP0003 OLD)
+ENDIF(COMMAND CMAKE_POLICY)
+
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+	SET(LINUX TRUE)
+ENDIF("${CMAKE_SYSTEM}" MATCHES "Linux")
+
+PROJECT(OBDLogger)
+
+SET(OBDLOGGER_MAJOR_VERSION 0)
+SET(OBDLOGGER_MINOR_VERSION 6)
+
+ADD_DEFINITIONS("-DOBDLOGGER_MAJOR_VERSION=${OBDLOGGER_MAJOR_VERSION}")
+ADD_DEFINITIONS("-DOBDLOGGER_MINOR_VERSION=${OBDLOGGER_MINOR_VERSION}")
+
+# You probably don't want to change this
+SET(OBD_CONFIG_FILENAME ".obdgpslogger")
+
+# This is the default serial port on my mac for my OBD Key
+SET(OBD_DEFAULT_SERIALPORT "/dev/cu.OBDKeyPro-DevB-1" CACHE STRING "Default serial port filename")
+
+# Only used by the UI when it launches GPSD, to add devices
+SET(OBD_GPSD_CONTROL_SOCKET "/tmp/obd_gpsd_controlsock" CACHE STRING "GPSD Control Socket (Used by UI)")
+
+# Only used by the UI when it launches GPSD, this is the default gps device
+SET(OBD_DEFAULT_GPSPORT "/dev/usbserial" CACHE STRING "GPSD default device filename (Used by UI)")
+
+# Only used by the UI when it launches GPSD, to kill it afterwards
+SET(OBD_GPSD_PIDFILE "/tmp/obd_gpsd_pid" CACHE STRING "GPSD PID File (Used by UI)")
+
+SET(OBD_DEFAULT_DATABASE "./obdlogger.db" CACHE STRING "Default database filename for all obdgpslogger modules")
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OBDLogger_SOURCE_DIR}/cmakemodules")
+
+SET(ENABLE_GPSD "ON" CACHE BOOL "Enable gps support using libgps")
+FIND_PACKAGE(GPSD)
+IF(ENABLE_GPSD)
+	IF(GPSD_FOUND)
+		INCLUDE_DIRECTORIES(${GPSD_INCLUDE_DIR})
+		ADD_DEFINITIONS(-DHAVE_GPSD)
+	ELSE(GPSD_FOUND)
+		SET(ENABLE_GPSD "OFF" CACHE BOOL "Enable gps support using libgps" FORCE)
+		MESSAGE(STATUS "Couldn't find libgps")
+	ENDIF(GPSD_FOUND)
+ENDIF(ENABLE_GPSD)
+
+SET(ENABLE_DBUS "OFF" CACHE BOOL "Enable dbus support")
+FIND_PACKAGE(Dbus)
+IF(ENABLE_DBUS)
+	IF(DBUS_FOUND)
+		INCLUDE_DIRECTORIES(${DBUS_INCLUDE_DIR})
+		ADD_DEFINITIONS(-DHAVE_DBUS)
+	ELSE(DBUS_FOUND)
+		SET(ENABLE_DBUS "OFF" CACHE BOOL "Enable dbus support" FORCE)
+		MESSAGE(STATUS "Couldn't find dbus")
+	ENDIF(DBUS_FOUND)
+ENDIF(ENABLE_DBUS)
+
+CONFIGURE_FILE("${OBDLogger_SOURCE_DIR}/src/obdconfig.h.cmake" "${OBDLogger_BINARY_DIR}/obdconfig.h")
+INCLUDE_DIRECTORIES("${OBDLogger_BINARY_DIR}")
+
+SET(EXECUTABLE_OUTPUT_PATH "${OBDLogger_SOURCE_DIR}/bin")
+
+SUBDIRS(
+	libs
+)
+
+INCLUDE_DIRECTORIES(
+	libs/sqlite3
+	src/obdinfo/
+	src/conf/
+)
+
+SUBDIRS(
+	src/obdinfo/
+	src/logger/
+	src/conf/
+	src/kml/
+	src/csv/
+	src/gui/
+)
+
+
+FILE(GLOB manfiles1 ${OBDLogger_SOURCE_DIR}/man/man1/*.1)
+INSTALL(FILES ${manfiles1} DESTINATION share/man/man1)
+
+
+# And now, packaging...
+
+# Common things to every type of package
+SET(CPACK_PACKAGE_DESCRIPTION "Tools to log OBD and GPS data")
+SET(CPACK_PACKAGE_NAME "OBDGPSLogger")
+SET(CPACK_PACKAGE_EXECUTABLES "obdgui")
+SET(CPACK_PACKAGE_VERSION_MAJOR ${OBDLOGGER_MAJOR_VERSION})
+SET(CPACK_PACKAGE_VERSION_MINOR ${OBDLOGGER_MINOR_VERSION})
+SET(CPACK_PACKAGE_VERSION "${OBDLOGGER_MAJOR_VERSION}.${OBDLOGGER_MINOR_VERSION}")
+SET(CPACK_STRIP_FILES true)
+SET(CPACK_PACKAGE_CONTACT "chunky@icculus.org")
+SET(CPACK_RESOURCE_FILE_LICENSE "${OBDLogger_SOURCE_DIR}/COPYING")
+
+
+# Always build .tar.gz and .sh files
+SET(CPACK_GENERATOR "STGZ;TGZ")
+
+
+IF(APPLE)
+	SET(CPACK_GENERATOR "${CPACK_GENERATOR};Bundle")
+	SET(CPACK_BUNDLE_ICON "${OBDLogger_SOURCE_DIR}/osx/BundleIcon.icns")
+	SET(CPACK_BUNDLE_NAME "OBD GPS Logger")
+	SET(CPACK_BUNDLE_PLIST "${OBDLogger_SOURCE_DIR}/osx/Info.plist")
+	SET(CPACK_BUNDLE_STARTUP_COMMAND "${OBDLogger_SOURCE_DIR}/osx/StartupCommand")
+
+	IF(GPSD_DAEMON)
+		INSTALL(PROGRAMS ${GPSD_DAEMON}
+				DESTINATION sbin/)
+	ENDIF(GPSD_DAEMON)
+ELSE(APPLE)
+
+	# If we can find rpmbuild, then go for it
+	FIND_PROGRAM(RPMBUILD_TEST rpmbuild INTERNAL)
+	IF(RPMBUILD_TEST)
+		SET(CPACK_GENERATOR "${CPACK_GENERATOR};RPM")
+		SET(CPACK_RPM_PACKAGE_REQUIRES "gpsd >= 2.0")
+		SET(CPACK_RPM_PACKAGE_LICENSE "GPLv2+")
+	ENDIF(RPMBUILD_TEST)
+
+	# If we can find dpkg, build a .deb
+	#FIND_PROGRAM(DPKG_TEST dpkg INTERNAL)
+	#IF(DPKG_TEST)
+		SET(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+		SET(CPACK_DEBIAN_PACKAGE_DEPENDS "gpsd (>=2.0)")
+		SET(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
+	#ENDIF(DPKG_TEST)
+
+ENDIF(APPLE)
+
+
+INCLUDE(CPack)
+
+

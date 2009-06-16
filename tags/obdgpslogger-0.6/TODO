@@ -1,0 +1,77 @@
+obdgpslogger:
+
+Break out all obd communications into separate library
+
+More intelligent serial port setup [specifically baud rate]
+
+Configuration file
+ - Configure which values we grab from the car
+
+Trouble codes?
+
+Enable little longer timeouts on the elm device
+
+Optimisations:
+ - SQLite insert batching or turn off synchronous or something.
+ - Change --enable-optimisations to take a version number or allow
+     granular control?
+ - ATBRD08 to run at 500k on CAN bus
+ - ATCRA/ATCM & ATCF to make sure only engine ecu is replying
+
+Set up sqlite busy handlers so we can more gracefully work with
+applications that simultaneously scrape the database as we write to it.
+
+--daemon option
+ - probably need a way to hot-change the device and/or logfile?
+
+
+obd2kml:
+
+Add more graphs? What's useful?
+
+Fix progress reporting while drawing individual graphs
+
+Add timestamps to graphs, so google earth can animate appropraitely.
+
+
+obdgui:
+
+Real-time graphs as well as the current gauges.
+
+Move GPSD Wizard and Convert Wizard into separate Tabs?
+
+Better shortcuts. Alt-F4/Apple-Q/Ctrl-Q should quit. Probably not escape.
+
+
+obd2osm:
+
+OpenStreetMap possibilities:
+
+1) Doing stuff the "right" [ish] way
+Download multiple .osm segments to encompass the whole area of a trip
+ http://www.openstreetmap.org/api/0.5/map?bbox=-0.5,51.3,-0.4,51.4
+ bbox params are WEST, SOUTH, EAST, NORTH
+
+Export trip data as a .osm file if can figure out how to render an
+overlay using it. Just marking stuff as "road" won't work.
+
+This bit may not be necessary if osmarender lets you have different
+rules with different files:
+Use Osmosis to combine .osm segments and trip .osm file into single .osm file
+ http://wiki.openstreetmap.org/wiki/Osmosis
+ osmosis --rx file2.osm --rx file1.osm --m --wx merged.osm
+
+Use osmarender to render .osm file to useful output
+ http://wiki.openstreetmap.org/wiki/Osmarender
+
+2) Still working off raw OSM data
+Same as #1, but use osmarender to create tiles then draw overlay ourselves
+using, eg, imagemagick or libsvg or something.
+
+3) Piggyback someone else for all the hard stuff
+Download rendered tiles from openstreetmap directly, overlay our trace
+on top of it, using general purpose image editing libraries
+
+Might be a bad idea, since you're mostly borrowing bandwidth from
+OSM. On the plus side, it'd be easy.
+
