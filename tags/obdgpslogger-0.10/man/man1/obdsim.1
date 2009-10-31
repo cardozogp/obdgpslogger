@@ -1,0 +1,49 @@
+.TH obdsim 1
+.SH NAME
+obdsim \- Simulate an ELM327 device
+
+.SH SYNOPSIS
+.B obdsim [ options ]
+
+.SH DESCRIPTION
+.IX Header "DESCRIPTION"
+obdsim simulates and ELM327 device using unix pseudo-terminals
+
+.SH OPTIONS
+.IX Header "OPTIONS"
+.IP "-s|--seed <seed>"
+Generator-specific seed. See section titled PLUGIN SEEDS below for
+more information
+.IP "-g|--generator <generator-name>"
+Choose a generator. A list of valid ones is output by --help
+.IP "-o|--launch-logger"
+Takes an [admittedly weak and hard-coded] attempt at launching
+obdgpslogger attached to the simulator in question.
+.IP "-v|--version"
+Print out version number and exit.
+.IP "-h|--help"
+Print out help and exit.
+ 
+.SH PLUGIN SEEDS
+.IX Header "PLUGIN SEEDS"
+Each plugin takes a seed. Here's what those seeds are:
+.IP Random
+It's a random seed
+.IP Logger
+Filename of an obdgpslogger logfile
+.IP dlopen
+Filename of a dynamically linked library
+.IP Socket
+ip-or-hostname:port
+.IP DBus
+Filename of a configuration file for the plugin
+.IP gui_fltk
+Ignores the passed seed
+
+.SH SEE ALSO
+.IX Header "SEE ALSO"
+.BR "obdgpslogger(1), obd2kml(1), obd2csv(1), obdgui(1), obdlogrepair(1)"
+
+.SH AUTHORS
+Gary "Chunky Ks" Briggs <chunky@icculus.org>
+
