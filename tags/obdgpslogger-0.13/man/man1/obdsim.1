@@ -1,0 +1,84 @@
+.TH obdsim 1
+.SH NAME
+obdsim \- Simulate an ELM327 device
+
+.SH SYNOPSIS
+.B obdsim [ options ]
+
+.SH DESCRIPTION
+.IX Header "DESCRIPTION"
+obdsim simulates and ELM327 device using unix pseudo-terminals
+
+.SH OPTIONS
+.IX Header "OPTIONS"
+.IP "-s|--seed <seed>"
+Generator-specific seed. See section titled PLUGIN SEEDS below for
+more information
+.IP "-g|--generator <generator-name>"
+Choose a generator. A list of valid ones is output by --help
+.IP "-l|--list-generators"
+Print a terse list of compiled in generators
+.IP "-q|--logfile <logfile>"
+Write all serial comms to this logfile
+.IP "-o|--launch-logger"
+Takes an [admittedly weak and hard-coded] attempt at launching
+obdgpslogger attached to the simulator in question. POSIX only.
+.IP "-c|--launch-screen"
+Takes an [admittedly weak and hard-coded] attempt at launching screen
+attached to the simulator in question. To close that screen window,
+use ctrl-a, k. POSIX only.
+.IP "-t|--tty-device"
+Instead of opening a pty, try to open this entry in /dev instead. POSIX
+only.
+.IP "-w|--com-port <comport>"
+Specify virtual com port to be used on windows [eg "COM1"]. Windows only.
+.IP "-e|--genhelp <generator-name>"
+Print out help for the specified generator, and exit.
+.IP "-V|--elm-version <version string>"
+Pretend to be this when someone resets with ATZ or similar
+.IP "-D|--elm-device <device string>"
+Pretend to be this when someone calls AT@1
+.IP "-v|--version"
+Print out version number and exit.
+.IP "-h|--help"
+Print out help and exit.
+ 
+.SH PLUGIN SEEDS
+.IX Header "PLUGIN SEEDS"
+Each plugin takes a seed. Here's what those seeds are:
+.IP Random
+[Optional] It's a random seed
+.IP Cycle
+[Optional] [cycle time in seconds[,number of gears]]
+.IP Logger
+[Obligatory] Filename of an obdgpslogger logfile
+.IP dlopen
+[Obligatory] Filename of a dynamically linked library
+.IP Socket
+[Obligatory] ip-or-hostname:port
+.IP DBus
+[Obligatory] Filename of a configuration file for the plugin
+.br
+[Optional] ",subseed" optional seed to pass to dlopen'd generator.
+.IP gui_fltk
+[Irrelevant] Ignores the passed seed
+
+.SH NOTES
+.IX Header "NOTES"
+The default sim ELM version and device both claim to be OBDGPSLogger.
+Some software may not like this. You may find examples of popular
+hardware to be useful:
+.IP OBDPro
+.br
+obdsim -V ELM327\\ v1.3\\ compatible -D OBDPros\\ LLC\\ v3
+.IP OBDLink
+.br
+obdsim -V ELM327\\ v1.3a -D SCANTOOL.NET\\ LLC
+
+.SH SEE ALSO
+.IX Header "SEE ALSO"
+.BR "obdgpslogger(1), obd2kml(1), obd2csv(1), obdgui(1), obdlogrepair(1), obdsim-dbus(5)"
+
+.SH AUTHORS
+Gary "Chunky Ks" Briggs <chunky@icculus.org>
+
