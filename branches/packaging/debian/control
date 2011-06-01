@@ -11,7 +11,8 @@ Vcs-Svn: svn://svn.icculus.org/obdgpslogger/trunk
 Package: obdgpslogger
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Suite of tools to log OBDII and GPS data
+Recommends: gpsd
+Description: suite of tools to log OBDII and GPS data
  OBDII is a standard for getting diagnostic information from your car.
  The main tool, obdgpslogger, is a command-line tool to log that data,
  with your gps position, to a sqlite database. Provided alongside are
