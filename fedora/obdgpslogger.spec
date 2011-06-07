@@ -1,6 +1,6 @@
 Name:		obdgpslogger
 Version:	0.16
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Suite of tools to log OBDII and GPS Data
 
 Group:		Applications/Engineering
@@ -21,13 +21,13 @@ BuildRequires:	sqlite-devel
 OBDII is a standard for getting diagnostic information from your car.
 The main tool, obdgpslogger, is a command-line tool to log that data,
 with your GPS position, to a database. Provided alongside are various
-tools used to convert logs to formats such as CSV or Google Eearth KML.
-Also contained in the package is an OBDII and ELM327 simulator, obdsim,
-that uses plugins to generate data.
+tools used to convert logs to formats such as CSV or Google Earth KML.
+The package also contains an OBDII and ELM327 simulator, obdsim.
 
 
 %prep
 %setup -q
+# Removing libs to ensure library code can't leak into the build
 rm -rf libs
 
 
@@ -35,7 +35,7 @@ rm -rf libs
 mkdir build
 cd build
 %{cmake} -DOBD_SQLITE_INCLUDED_LIB=Off -DCMAKE_INSTALL_PREFIX=%{_prefix} ..
-make %{?jobs:-j%jobs}
+make %{?_smp_mflags}
 
 
 %install
@@ -64,6 +64,9 @@ make install DESTDIR=%{buildroot}
 
 
 %changelog
+* Mon Jun 06 2011 Gary Briggs <chunky@icculus.org> - 0.16-2
+- Packaging update based on feedback in RH Bugzilla #709125
+- Clean up comments and description section, fix make smp flags
 * Sat May 28 2011 Gary Briggs <chunky@icculus.org> - 0.16-1
 - Initial release of RPM .spec
 
